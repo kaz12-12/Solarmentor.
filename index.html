@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Solar Inteligente</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+    /* --- VARIABLES --- */
+    :root {
+        --primary-color: #40c4ff; 
+        --secondary-color: #00b0ff;
+        --accent-color: #ffb74d;
+        --text-color: #f0f0f0;
+        --glass-bg: rgba(30, 40, 55, 0.45); 
+        --border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                    url('https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: var(--text-color);
+        margin: 0;
+        padding: 40px 20px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    /* --- CONTENEDOR UI --- */
+    #calculadora-container {
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); 
+        border: 1px solid var(--border-color);
+        padding: 0;
+        width: 100%;
+        max-width: 700px;
+        overflow: hidden;
+    }
+
+    /* HEADER */
+    .header-banner {
+        background: linear-gradient(135deg, rgba(1, 87, 155, 0.7) 0%, rgba(2, 119, 189, 0.7) 100%);
+        padding: 35px 25px;
+        text-align: center;
+        color: white;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .header-banner h1 { 
+        margin: 0; 
+        font-size: 1.6rem; 
+        font-weight: 700; 
+        line-height: 1.3; 
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .header-banner p { 
+        margin: 10px 0 0; 
+        opacity: 0.95; 
+        font-size: 1rem; 
+        font-weight: 400; 
+        color: #e1f5fe;
+        border-top: 1px solid rgba(255,255,255,0.2);
+        padding-top: 10px;
+        display: inline-block;
+    }
+
+    /* FORMULARIO */
+    .form-wrapper { padding: 30px 40px; background: transparent; }
+    h3 { color: var(--primary-color); font-weight: 600; font-size: 1.1rem; border-left: 4px solid var(--accent-color); padding-left: 12px; margin-top: 25px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: #f5f5f5; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    
+    .form-group input, .form-group select { 
+        width: 100%; padding: 14px 15px; border: 1px solid var(--border-color);
+        background-color: rgba(255, 255, 255, 0.15); 
+        color: white; border-radius: 12px; 
+        box-sizing: border-box; font-size: 1rem; font-family: 'Poppins', sans-serif; transition: all 0.3s ease;
+    }
+    .form-group input:focus, .form-group select:focus {
+        background-color: rgba(255, 255, 255, 0.25); border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 2px rgba(64, 196, 255, 0.3);
+    }
+    .form-group select option { background-color: #333; color: white; }
+
+    /* BOTONES */
+    button.btn-calcular { 
+        width: 100%; padding: 16px; background: linear-gradient(to right, #0277bd, #039be5); color: white; border: none; border-radius: 50px; 
+        font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; 
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.2);
+    }
+    button.btn-calcular:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(3, 155, 229, 0.5); }
+
+    /* RESULTADOS UI */
+    #resultado { 
+        display: none; 
+        background-color: rgba(0, 0, 0, 0.3); 
+        border-top: 1px solid var(--border-color); padding: 30px 40px;
+        animation: slideUp 0.7s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+    .resultado-titulo { text-align: center; color: var(--primary-color); margin-bottom: 25px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+    
+    .ficha-resumen { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; font-size: 0.95rem; border-left: 4px solid var(--primary-color); color: #fff; border: 1px solid var(--border-color); }
+    
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    
+    .card-info { background: rgba(255, 255, 255, 0.1); padding: 20px 15px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color); transition: transform 0.3s; color: #fff; }
+    .card-info:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
+    .card-info i { font-size: 1.8rem; margin-bottom: 10px; display: block; opacity: 0.9; }
+    .card-info small { color: #ccc; font-size: 0.75rem; display: block; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
+    .card-info strong { color: var(--primary-color); font-size: 1.15rem; display: block; }
+    
+    .card-info.highlight { background: linear-gradient(135deg, rgba(3, 155, 229, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%); border: 1px solid rgba(64, 196, 255, 0.4); }
+    .card-info.highlight strong { color: #80d8ff; font-weight: 700; font-size: 1.3rem; }
+    
+    /* COLORES ICONOS */
+    .icon-solar { color: #ffca28; } 
+    .icon-money { color: #69f0ae; } 
+    .icon-power { color: #ff5252; }
+    .icon-leaf { color: #66bb6a; }
+    .icon-check { color: #00e676; }
+
+    /* VIDEO & CONTACTO */
+    .video-card { background: rgba(255, 255, 255, 0.08); border-radius: 15px; padding: 25px; margin-top: 30px; text-align: center; position: relative; overflow: hidden; color: #fff; border: 1px solid var(--border-color); }
+    .video-card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #d32f2f; }
+    .video-button { display: inline-block; width: 100%; padding: 15px; border-radius: 12px; text-decoration: none; color: white; font-weight: 600; margin-top: 15px; background: linear-gradient(45deg, #c62828, #e53935); box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1); }
+    .video-button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(229, 57, 53, 0.5); }
+    
+    .contact-section { margin-top: 35px; text-align: center; padding-top: 20px; border-top: 1px dashed var(--border-color); color: #ccc; }
+    .whatsapp-btn { display: block; background: linear-gradient(45deg, #00c853, #009624); color: white; padding: 16px; border-radius: 50px; text-decoration: none; font-weight: 700; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s; font-size: 1.05rem; }
+    .whatsapp-btn:hover { transform: scale(1.03); }
+
+    .print-button { background: rgba(255,255,255,0.1); color: #aaa; border: 1px solid var(--border-color); width: 100%; padding: 12px; border-radius: 8px; margin-top: 15px; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; }
+    .print-button:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    .grafico-wrapper { background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); margin-top: 20px; height: 260px; }
+    .nota-disclaimer { font-size: 0.75rem; color: #ccc; text-align: justify; margin-top: 25px; background: rgba(255, 193, 7, 0.15); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 193, 7, 0.3); }
+
+    /* PDF TEMPLATE */
+    #pdf-template {
+        position: absolute; top: -9999px; left: -9999px; width: 800px;
+        background: white; color: #333; padding: 40px; font-family: 'Helvetica', sans-serif; border: 1px solid #ddd;
+    }
+    #pdf-template h1 { color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; font-size: 24px; }
+    #pdf-template h2 { color: #0277bd; font-size: 1.2rem; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid #eee; }
+    .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .pdf-box { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+    .pdf-box p { margin: 5px 0; font-size: 0.9rem; }
+    .pdf-highlight { background: #e3f2fd; border: 1px solid #90caf9; }
+    .pdf-highlight p { font-size: 1.1rem; color: #0d47a1; font-weight: bold; }
+    .pdf-footer { margin-top: 50px; text-align: center; font-size: 0.8rem; color: #777; border-top: 1px solid #eee; padding-top: 20px; }
+    
+    @media (max-width: 500px) {
+        .dashboard-grid { grid-template-columns: 1fr; }
+        body { padding: 10px; }
+    }
+    </style>
+</head>
+<body>
+
+    <div id="calculadora-container">
+        
+        <div class="header-banner">
+            <h1>Plataforma de cotización inteligente con audiovisual automatizada</h1>
+            <p><i class="fa-solid fa-solar-panel"></i> Sistema de Autoconsumo e Inyección a la Red</p>
+        </div>
+        
+        <div class="form-wrapper">
+            <h3><i class="fa-solid fa-user-circle"></i> Tus Datos</h3>
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" id="clienteNombre" placeholder="Ej: Juan Pérez">
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="tel" id="clienteTelefono" placeholder="+569...">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="clienteEmail" placeholder="correo@ejemplo.com">
+            </div>
+            <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" id="clienteDireccion" placeholder="Dirección de instalación">
+            </div>
+            
+            <h3><i class="fa-solid fa-bolt"></i> Tu Consumo</h3>
+            <div class="form-group">
+                <label>Costo Boleta Mensual ($)</label>
+                <input type="text" id="costoBoleta" placeholder="Ej: 80000 (Mín $50.000 - Máx $250.000)" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+            </div>
+            
+            <div class="form-group">
+                <label>Ubicación</label>
+                <select id="ciudad">
+                    <option value="">-- Selecciona Zona --</option>
+                    <option value="5.3">Coquimbo / La Serena</option>
+                    <option value="4.7">Santiago (RM)</option>
+                </select>
+            </div>
+            
+            <button class="btn-calcular" onclick="calcularSistema()">
+                <i class="fa-solid fa-calculator"></i> CALCULAR PROYECTO
+            </button>
+        </div>
+        
+        <div id="resultado">
+            <h2 class="resultado-titulo">
+                <i class="fa-solid fa-chart-pie"></i> Tu Propuesta Solar
+            </h2>
+
+            <div class="ficha-resumen">
+                <strong>Cliente:</strong> <span id="infoNombre" style="color:#fff;"></span><br>
+                <strong>Ciudad:</strong> <span id="infoCiudad" style="color:#fff;"></span>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="card-info">
+                    <i class="fa-solid fa-solar-panel icon-solar"></i>
+                    <small>Sistema Sugerido</small>
+                    <strong id="potenciaResultado"></strong>
+                </div>
+                
+                <div class="card-info">
+                    <i class="fa-solid fa-file-circle-check icon-check"></i>
+                    <small>Tramitación SEC</small>
+                    <strong>INCLUIDA TE4</strong>
+                </div>
+
+                <div class="card-info">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <small>Paneles</small>
+                    <strong id="panelesResultado"></strong>
+                </div>
+                <div class="card-info">
+                    <i class="fa-solid fa-leaf icon-leaf"></i>
+                    <small>Impacto Ambiental</small>
+                    <strong id="co2ResultadoVisual"></strong>
+                </div>
+                <div class="card-info highlight">
+                    <i class="fa-solid fa-money-bill-wave icon-money"></i>
+                    <small>Costo Estimado</small>
+                    <strong id="costoEstimadoResultado"></strong>
+                </div>
+                <div class="card-info highlight">
+                    <i class="fa-solid fa-piggy-bank icon-money"></i>
+                    <small>Ahorro Anual</small>
+                    <strong id="ahorroAnualResultado"></strong>
+                </div>
+                <div class="card-info">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <small>Retorno (ROI)</small>
+                    <strong id="roiResultado"></strong>
+                </div>
+            </div>
+            
+            <div class="grafico-wrapper">
+                <canvas id="graficoConsumo"></canvas>
+            </div>
+            <div class="grafico-wrapper">
+                <canvas id="graficoROI"></canvas>
+            </div>
+
+            <div class="video-card">
+                <h4 style="margin:0 0 10px 0; color:#ef5350;">
+                    <i class="fa-brands fa-youtube"></i> Aquí te lo explico
+                </h4>
+                <p style="font-size:0.9rem; margin-bottom:15px; color:#ddd;">
+                    Mira este video donde te explico en detalle tu sistema solar y la tramitación.
+                </p>
+                <a id="btnVideoTramitacion" href="#" target="_blank" class="video-button">
+                    <i class="fa-solid fa-play"></i> VER VIDEO EXPLICATIVO
+                </a>
+            </div>
+
+            <div class="contact-section">
+                <p style="font-size:0.95rem; margin-bottom:15px; font-weight:500;">¿Listo para empezar? Envíame los resultados.</p>
+                <a id="whatsapp-link" href="#" target="_blank" class="whatsapp-btn">
+                    <i class="fa-brands fa-whatsapp"></i> Confirmar por WhatsApp
+                </a>
+                <p style="margin-top:15px; font-size:0.85rem; color:#aaa;">presupuestoelectricos@gmail.com</p>
+            </div>
+            
+            <button onclick="generarPDF()" class="print-button">
+                <i class="fa-solid fa-file-pdf"></i> Descargar Cotización PDF
+            </button>
+            
+            <div class="nota-disclaimer">
+                * Valores referenciales sujetos a factibilidad técnica e inspección en terreno.
+            </div>
+        </div>
+    </div>
+
+    <div id="pdf-template">
+        <h1>PROPUESTA SOLAR FOTOVOLTAICA</h1>
+        <div class="pdf-grid">
+            <div class="pdf-box">
+                <p><strong>Fecha:</strong> <span id="pdfFecha"></span></p>
+                <p><strong>Cliente:</strong> <span id="pdfNombre"></span></p>
+                <p><strong>Teléfono:</strong> <span id="pdfTelefono"></span></p>
+                <p><strong>Email:</strong> <span id="pdfEmail"></span></p>
+            </div>
+            <div class="pdf-box">
+                <p><strong>Dirección:</strong> <span id="pdfDireccion"></span></p>
+                <p><strong>Ciudad (HSP):</strong> <span id="pdfCiudad"></span></p>
+                <p><strong>Consumo Ref:</strong> <span id="pdfCostoBoleta"></span></p>
+            </div>
+        </div>
+
+        <h2>Detalles del Sistema</h2>
+        <div class="pdf-grid">
+            <div class="pdf-box pdf-highlight">
+                <p>Potencia:</p>
+                <p id="pdfPotencia"></p>
+            </div>
+            <div class="pdf-box">
+                <p>Paneles:</p>
+                <p id="pdfPaneles"></p>
+            </div>
+            <div class="pdf-box pdf-highlight">
+                <p>Inversión Estimada:</p>
+                <p id="pdfCostoTotal"></p>
+            </div>
+             <div class="pdf-box">
+                <p>Tramitación SEC:</p>
+                <p>INCLUIDA (TE4)</p>
+            </div>
+        </div>
+
+        <h2>Análisis Financiero y Ambiental</h2>
+        <div class="pdf-grid">
+             <div class="pdf-box">
+                <p>Ahorro Anual:</p>
+                <p id="pdfAhorro"></p>
+            </div>
+             <div class="pdf-box">
+                <p>Retorno (ROI):</p>
+                <p id="pdfROI"></p>
+            </div>
+            <div class="pdf-box">
+                <p>Reducción CO2:</p>
+                <p id="pdfCO2"></p>
+            </div>
+        </div>
+
+        <h2>Proyección Gráfica</h2>
+        <div id="pdf-charts-container" style="display:flex; justify-content:space-between; margin-top:10px;">
+            </div>
+
+        <div class="pdf-footer">
+            <p>Generado por SolarMentor - Plataforma de Ingeniería Solar</p>
+            <p>Este documento es una estimación preliminar. Requiere visita técnica.</p>
+        </div>
+    </div>
+
+    <script>
+        const PRECIO_POR_KWP_CLP = 960000; 
+        const FACTOR_CO2_KWH = 0.4; 
+        const FACTOR_PERDIDAS = 0.80; 
+        const PRECIO_KWH_BOLETA = 249; // Precio para estimar consumo
+        const PRECIO_KWH_AHORRO = 200; // Precio REALISTA para ROI
+        const PANEL_WP_FIJO = 550;
+        const TELEFONO_WHATSAPP = "56931722463";
+        const LIMITE_BOLETA = 250000;
+        
+        const FACTOR_COBERTURA = 1.5; 
+        const SOBREDIMENSION_DC_AC = 1.25;
+
+        let miGraficoROI = null;
+        let miGraficoConsumo = null;
+        
+        async function generarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const template = document.getElementById('pdf-template');
+            
+            // Capturar gráficos actuales
+            const chartContainer = document.getElementById('pdf-charts-container');
+            chartContainer.innerHTML = ''; 
+            const img1 = document.createElement('img'); img1.src = document.getElementById('graficoConsumo').toDataURL('image/png'); img1.style.width = '48%';
+            const img2 = document.createElement('img'); img2.src = document.getElementById('graficoROI').toDataURL('image/png'); img2.style.width = '48%';
+            chartContainer.appendChild(img1); chartContainer.appendChild(img2);
+
+            // Hacer visible temporalmente
+            template.style.top = "0"; template.style.left = "0"; template.style.zIndex = "9999";
+            
+            try {
+                const canvas = await html2canvas(template, { scale: 2 });
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; 
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                doc.save('Cotizacion_Solar.pdf');
+            } catch (err) {
+                console.error(err); alert("Error al generar PDF.");
+            } finally {
+                template.style.top = "-9999px"; template.style.left = "-9999px";
+            }
+        }
+
+        function calcularSistema() {
+            try {
+                const clienteNombre = document.getElementById("clienteNombre").value.trim();
+                const clienteTelefono = document.getElementById("clienteTelefono").value.trim();
+                const clienteEmail = document.getElementById("clienteEmail").value.trim();
+                const clienteDireccion = document.getElementById("clienteDireccion").value.trim();
+                
+                // LECTURA SEGURA DE COSTO
+                let costoInput = document.getElementById("costoBoleta").value;
+                costoInput = costoInput.replace(/\./g, ''); 
+                const costoBoleta = parseFloat(costoInput);
+                
+                const hsp = parseFloat(document.getElementById("ciudad").value);
+                
+                const divResultado = document.getElementById("resultado");
+                
+                if (clienteNombre === "") { alert("Ingresa tu Nombre."); return; }
+                
+                if (isNaN(costoBoleta)) { alert("Ingresa un costo válido."); return; }
+                if (costoBoleta < 50000) { alert("El consumo mínimo para cotizar es de $50.000."); return; }
+                if (costoBoleta > LIMITE_BOLETA) { alert("Para cuentas mayores a $250.000, contáctanos directamente para una evaluación industrial."); return; }
+                
+                if (isNaN(hsp) || hsp <= 0) { alert("Selecciona ciudad."); return; }
+                
+                const consumoMensualKWh = costoBoleta / PRECIO_KWH_BOLETA;
+                
+                let numPaneles = 0;
+                let potInversorKW = 0;
+
+                // --- LÓGICA DE TRAMOS ---
+                if (costoBoleta >= 50000 && costoBoleta < 60000) {
+                    numPaneles = 6;  // 3.3 kWp
+                    potInversorKW = 3;
+                } else if (costoBoleta >= 60000 && costoBoleta < 78000) {
+                    numPaneles = 8;  // 4.4 kWp
+                    potInversorKW = 4;
+                } else if (costoBoleta >= 78000 && costoBoleta <= 120000) {
+                    numPaneles = 10; // 5.5 kWp
+                    potInversorKW = 5;
+                } else {
+                    // Cálculo avanzado para consumos mayores
+                    const consumoDiario = consumoMensualKWh / 30;
+                    const energiaObjetivo = consumoDiario * FACTOR_COBERTURA; 
+                    const potPanelesNecesaria = energiaObjetivo / (FACTOR_PERDIDAS * hsp); 
+                    numPaneles = Math.ceil((potPanelesNecesaria * 1000) / PANEL_WP_FIJO);
+                    
+                    const potenciaMinimaInversor = (numPaneles * PANEL_WP_FIJO / 1000) / SOBREDIMENSION_DC_AC; 
+                    const inversoresDisponibles = [2, 3, 4, 5, 6, 8, 10]; 
+                    potInversorKW = 10;
+                    const inversorEncontrado = inversoresDisponibles.find(inv => inv >= potenciaMinimaInversor);
+                    if (inversorEncontrado) { potInversorKW = inversorEncontrado; }
+                }
+
+                // CÁLCULOS FINALES
+                const potRealPanelesKWp = (numPaneles * PANEL_WP_FIJO) / 1000;
+                const generacionDiaria = potRealPanelesKWp * FACTOR_PERDIDAS * hsp;
+                const generacionMensual = generacionDiaria * 30;
+                const generacionAnual = generacionMensual * 12; 
+                const costoProyecto = potRealPanelesKWp * PRECIO_POR_KWP_CLP; 
+                
+                const ahorroAnual = generacionAnual * PRECIO_KWH_AHORRO; 
+                
+                const roi = costoProyecto / ahorroAnual;
+                const co2Ton = (generacionAnual * FACTOR_CO2_KWH) / 1000;
+
+                const fmtCLP = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+                const ciudadNom = document.getElementById("ciudad").options[document.getElementById("ciudad").selectedIndex].text;
+                
+                const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+
+                setText("infoCostoBoleta", fmtCLP.format(costoBoleta));
+                setText("infoCiudad", ciudadNom);
+                setText("infoNombre", clienteNombre);
+                
+                const potFmt = `${potRealPanelesKWp.toFixed(2)} kWp`;
+                const roiFmt = `${roi.toFixed(1)} Años`;
+                const costoFmt = fmtCLP.format(costoProyecto);
+                const ahorroFmt = fmtCLP.format(ahorroAnual);
+                const co2Fmt = `${co2Ton.toFixed(2)} Ton/Año`;
+
+                setText("potenciaResultado", potFmt);
+                setText("panelesResultado", `${numPaneles} x ${PANEL_WP_FIJO}W`);
+                setText("ahorroAnualResultado", ahorroFmt); 
+                setText("costoEstimadoResultado", costoFmt);
+                setText("roiResultado", roiFmt);
+                setText("co2ResultadoVisual", co2Fmt); 
+
+                // Datos para PDF oculto
+                setText("pdfFecha", new Date().toLocaleDateString('es-CL'));
+                setText("pdfNombre", clienteNombre);
+                setText("pdfTelefono", clienteTelefono);
+                setText("pdfEmail", clienteEmail);
+                setText("pdfDireccion", clienteDireccion);
+                setText("pdfCiudad", ciudadNom);
+                setText("pdfCostoBoleta", fmtCLP.format(costoBoleta));
+                setText("pdfPotencia", potFmt);
+                setText("pdfPaneles", `${numPaneles} paneles`);
+                setText("pdfCostoTotal", costoFmt);
+                setText("pdfAhorro", ahorroFmt);
+                setText("pdfROI", roiFmt);
+                setText("pdfCO2", co2Fmt); 
+
+                divResultado.style.display = "block";
+                setTimeout(() => { divResultado.scrollIntoView({behavior: "smooth"}); }, 100);
+
+                // LÓGICA VIDEO ACTUALIZADA
+                let urlVideo = "https://www.youtube.com/watch?v=VIDEO_GENERICO"; 
+                
+                // Rango 50k - 80k (Tu video piloto)
+                if (costoBoleta >= 50000 && costoBoleta <= 80000) {
+                    urlVideo = "https://youtu.be/TpYcNzrugqg";
+                } 
+                // Tramos altos (Ejemplos)
+                else {
+                    const videosInv = { 
+                        5: "https://www.youtube.com/watch?v=LINK_5KW", 
+                        8: "https://www.youtube.com/watch?v=LINK_8KW",
+                        10: "https://www.youtube.com/watch?v=LINK_10KW"
+                    };
+                    if (videosInv[potInversorKW]) urlVideo = videosInv[potInversorKW];
+                }
+                
+                document.getElementById("btnVideoTramitacion").href = urlVideo;
+                
+                // GRÁFICOS
+                if (miGraficoROI) miGraficoROI.destroy();
+                if (miGraficoConsumo) miGraficoConsumo.destroy();
+                
+                const ctx1 = document.getElementById('graficoConsumo').getContext('2d');
+                miGraficoConsumo = new Chart(ctx1, { 
+                    type: 'bar',
+                    data: {
+                        labels: ['Consumo Actual', 'Generación Solar'],
+                        datasets: [{
+                            label: 'kWh/Mes',
+                            data: [consumoMensualKWh.toFixed(0), generacionMensual.toFixed(0)],
+                            backgroundColor: ['rgba(41, 182, 246, 0.7)', 'rgba(0, 230, 118, 0.7)'],
+                            borderColor: ['rgba(41, 182, 246, 1)', 'rgba(0, 230, 118, 1)'],
+                            borderWidth: 1, borderRadius: 6
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false }, title: {display: true, text: 'Energía Mensual (kWh)'} } }
+                });
+                
+                const ctx2 = document.getElementById('graficoROI').getContext('2d');
+                let labelsX = []; let dataY = [];
+                for (let i = 0; i <= Math.ceil(roi) + 3; i++) {
+                    labelsX.push(`Año ${i}`);
+                    dataY.push((ahorroAnual * i) - costoProyecto);
+                }
+                miGraficoROI = new Chart(ctx2, { 
+                    type: 'line', 
+                    data: {
+                        labels: labelsX,
+                        datasets: [{
+                            label: 'Flujo de Caja',
+                            data: dataY,
+                            borderColor: '#0288d1',
+                            backgroundColor: 'rgba(2, 136, 209, 0.1)',
+                            fill: true, tension: 0.3
+                        }]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        scales: { y: { ticks: { callback: value => new Intl.NumberFormat('es-CL', {style: 'currency', currency: 'CLP', maximumFractionDigits: 0}).format(value) } } },
+                        plugins: { title: {display: true, text: 'Recuperación Inversión'} } 
+                    }
+                });
+
+                // Link WhatsApp
+                let msg = `Hola, cotización solar:\n*Cliente:* ${clienteNombre}\n*Sistema:* ${potFmt}\n*CO2 Reducido:* ${co2Fmt}\n*Inversión:* ${costoFmt}`;
+                document.getElementById("whatsapp-link").href = `https://wa.me/${TELEFONO_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+
+            } catch (error) { console.error(error); alert("Error: " + error.message); }
+        }
+    </script>
+</body>
+</html>
